@@ -3,29 +3,20 @@ package girder
 import (
 	"net/http"
 
+	"github.com/SierraSoftworks/gatekeeper"
 	"github.com/SierraSoftworks/girder/errors"
 	. "gopkg.in/check.v1"
 )
-
-type TestUser struct {
-	id string
-}
-
-func (u *TestUser) GetID() string {
-	return u.id
-}
-
-func (u *TestUser) HasPermission(permission string) bool {
-	return true
-}
 
 func (s *TestSuite) TestIsAuthenticated(c *C) {
 	ctx := &Context{}
 	c.Check(ctx.IsAuthenticated(), Equals, false)
 
 	ctx = &Context{
-		User: &TestUser{
-			id: "bob",
+		Permissions: gatekeeper.NewMatcher(),
+		User: &testUser{
+			id:          "bob",
+			permissions: []string{"x"},
 		},
 	}
 
@@ -34,6 +25,7 @@ func (s *TestSuite) TestIsAuthenticated(c *C) {
 
 func (s *TestSuite) TestRequireAuthentication(c *C) {
 	ctx := &Context{
+		Permissions: gatekeeper.NewMatcher(),
 		Request: &http.Request{
 			Header: http.Header{},
 		},
@@ -41,8 +33,9 @@ func (s *TestSuite) TestRequireAuthentication(c *C) {
 
 	h := NewHandler(nil)
 	h.RequireAuthentication(func(token *AuthorizationToken) (User, error) {
-		return &TestUser{
-			id: token.Value,
+		return &testUser{
+			id:          token.Value,
+			permissions: []string{},
 		}, nil
 	})
 
@@ -58,5 +51,5 @@ func (s *TestSuite) TestRequireAuthentication(c *C) {
 	ctx.Request.Header.Set("Authorization", "Token test")
 	err = proc(ctx)
 	c.Assert(err, IsNil)
-	c.Check(ctx.User, DeepEquals, &TestUser{id: "test"})
+	c.Check(ctx.User, DeepEquals, &testUser{id: "test", permissions: []string{}})
 }

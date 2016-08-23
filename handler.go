@@ -3,6 +3,7 @@ package girder
 import (
 	"net/http"
 
+	"github.com/SierraSoftworks/gatekeeper"
 	"github.com/SierraSoftworks/girder/errors"
 	log "github.com/Sirupsen/logrus"
 	"github.com/gorilla/mux"
@@ -32,6 +33,7 @@ func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		ResponseHeaders: w.Header(),
 		Vars:            mux.Vars(r),
 		StatusCode:      200,
+		Permissions:     gatekeeper.NewMatcher().WithContext(mux.Vars(r)),
 
 		response: w,
 	}

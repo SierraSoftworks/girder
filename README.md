@@ -99,7 +99,7 @@ func handlerFunc(c *girder.Context) (interface{}, error) {
 User authentication is a common enough use case that we've decided to build it into Girder
 out of the box. Users are provided by a callback when you register your authorization preprocessor
 and are expected to provide both a `GetID()` method (for use within your application) and a
-`HasPermission()` method which allows Girder to determine whether the user has permission to
+`GetPermissions()` method which allows Girder to determine whether the user has permission to
 access a route or not.
 
 ```go
@@ -134,17 +134,18 @@ func (s *UserStore) GetUser(token *girder.AuthorizationToken) (girder.User, erro
 }
 
 type User struct {
-    id         string
+    id          string
+    permissions []string
     tokens      []string
 }
 
-// Extend your user type with the GetID() and HasPermission() functions
+// Extend your user type with the GetID() and GetPermissions() functions
 func (u *User) GetID() string {
     return u.id
 }
 
-func (u *User) HasPermission(permission string) bool {
-    return true
+func (u *User) GetPermissions() []string {
+    return u.permissions
 }
 
 // GET /api/v1/hello
@@ -164,6 +165,7 @@ func main() {
             User{
                 id: "bob",
                 tokens: []string{"0123456789abcdef"},
+                permissions: []string{"hello"},
             },
         },
     }

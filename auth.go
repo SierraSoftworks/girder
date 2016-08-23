@@ -17,7 +17,10 @@ func (h *Handler) RequireAuthentication(getUser func(token *AuthorizationToken) 
 				return err
 			}
 
-			c.User = user
+			if user != nil {
+				c.User = user
+				c.Permissions = c.Permissions.WithPermissions(user.GetPermissions())
+			}
 		}
 
 		if !c.IsAuthenticated() {
