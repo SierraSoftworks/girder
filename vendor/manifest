@@ -2,6 +2,14 @@
 	"version": 0,
 	"dependencies": [
 		{
+			"importpath": "github.com/SierraSoftworks/gatekeeper",
+			"repository": "https://github.com/SierraSoftworks/gatekeeper",
+			"vcs": "git",
+			"revision": "a0afb5186db5eb2b17629b744267f165c434f163",
+			"branch": "master",
+			"notests": true
+		},
+		{
 			"importpath": "github.com/Sirupsen/logrus",
 			"repository": "https://github.com/Sirupsen/logrus",
 			"vcs": "git",
