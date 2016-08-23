@@ -1,6 +1,11 @@
 package girder
 
-import "net/http"
+import (
+	"net/http"
+
+	"github.com/SierraSoftworks/gatekeeper"
+	"github.com/SierraSoftworks/girder/errors"
+)
 
 // Context represents an API request's context
 type Context struct {
@@ -9,15 +14,16 @@ type Context struct {
 	ResponseHeaders http.Header
 	StatusCode      int
 	User            User
+	Permissions     *gatekeeper.Matcher
 
 	response http.ResponseWriter
 }
 
 // ReadBody will deserialize the request's body into the given object
-func (c *Context) ReadBody(into interface{}) *Error {
+func (c *Context) ReadBody(into interface{}) error {
 	err := parseJSON(into, c)
 	if err != nil {
-		return NewError(400, "Bad Request", "The data you provided could not be parsed as valid JSON. Please check it and try again.")
+		return errors.BadRequest()
 	}
 
 	return nil

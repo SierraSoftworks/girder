@@ -1,13 +1,11 @@
 # Girder
 **A Go web API toolkit designed to reduce common boilerplate**
 
-**WARNING** Opinionated code ahead
+**⚠ WARNING** Opinionated code ahead
 
  Girder is a relatively opinionated toolkit, it assumes you will be building
  an API which consumes structured, serializable objects (JSON for example) and
- then produces responses in a similar format. It assumes you want to make use
- of structured error objects which follow HTTP semantics and it assumes you want
- to do all this without writing your it into every handler.
+ then produces responses in a similar format.
 
  It has been inspired from a wide number of different projects I've developed over
  the years on everything from C# to Node.js and finally Go, so it'll take inspiration
@@ -29,7 +27,7 @@ import (
     "github.com/gorilla/mux"
 )
 
-func hello(c *girder.Context) (interface{}, *girder.Error) {
+func hello(c *girder.Context) (interface{}, error) {
     return fmt.Sprintf("Hello %s", c.Vars["name"]), nil
 }
 
@@ -57,7 +55,7 @@ A `girder.HandlerFunc` looks like this, keeping things nice and simple to write 
 overhead.
 
 ```go
-func handlerFunc(c *girder.Context) (interface{}, *girder.Error) {
+func handlerFunc(c *girder.Context) (interface{}, error) {
     return MyData{"x"}, nil
 }
 ```
@@ -74,7 +72,7 @@ In these cases, you'll want an easy way to deserialize the request into some obj
 choosing. Girder makes this spectacularly simple, here's a quick echo function.
 
 ```go
-func handlerFunc(c *girder.Context) (interface{}, *girder.Error) {
+func handlerFunc(c *girder.Context) (interface{}, error) {
     var req RequestData
     if err := c.ReadBody(&req); err != nil {
         return nil, err
@@ -91,7 +89,7 @@ parameters. You can access your route parameters directly from the context using
 
 ```go
 // GET /api/v1/hello/{name}
-func handlerFunc(c *girder.Context) (interface{}, *girder.Error) {
+func handlerFunc(c *girder.Context) (interface{}, error) {
     name := c.Vars["name"]
     return fmt.Sprintf("Hello %s", name), nil
 }
@@ -99,19 +97,29 @@ func handlerFunc(c *girder.Context) (interface{}, *girder.Error) {
 
 ### User Authentication
 User authentication is a common enough use case that we've decided to build it into Girder
-out of the box. Similarly, we assume you'll need support for some kind of user authorization
-system, so we've bundled our design of choice, however you can easily replace it.
+out of the box. Users are provided by a callback when you register your authorization preprocessor
+and are expected to provide both a `GetID()` method (for use within your application) and a
+`HasPermission()` method which allows Girder to determine whether the user has permission to
+access a route or not.
 
 ```go
+package main
+
+import (
+    "net/http"
+
+    "github.com/SierraSoftworks/girder"
+    "github.com/SierraSoftworks/girder/errors"
+    "github.com/gorilla/mux"
+)
+
 type UserStore struct {
     users []User
 }
 
-// Ensure your user store provides a GetUser() function accepting a `girder.AuthorizationToken`
-// and returning a user object.
-func (s *UserStore) GetUser(token *girder.AuthorizationToken) (girder.User, *girder.Error) {
+func (s *UserStore) GetUser(token *girder.AuthorizationToken) (girder.User, error) {
     if token.Type != "Token" {
-        return nil, girder.NewError(401, "Unauthorized", "You failed to provide a valid authentication token type with your request.")
+        return nil, errors.NewError(401, "Unauthorized", "You failed to provide a valid authentication token type with your request.")
     }
 
     for _, user := range s.users {
@@ -127,39 +135,42 @@ func (s *UserStore) GetUser(token *girder.AuthorizationToken) (girder.User, *gir
 
 type User struct {
     id         string
-    permissions []string
     tokens      []string
 }
 
-// Extend your user type with the ID() and Permissions() functions
-func (u *User) ID() string {
+// Extend your user type with the GetID() and HasPermission() functions
+func (u *User) GetID() string {
     return u.id
 }
 
-func (u *User) Permissions() []string {
-    return u.permissions
+func (u *User) HasPermission(permission string) bool {
+    return true
 }
 
-func init() {
+// GET /api/v1/hello
+func hello(c *girder.Context) (interface{}, error) {
+    user, err := users.GetByID(c.User.ID())
+    if err != nil {
+        return nil, errors.From(err)
+    }
+
+    return fmt.Sprintf("Hello %s", user.Name), nil
+}
+
+func main() {
     // Point girder at your user store
-    girder.ActiveUserStore = &UserStore{
+    store := &UserStore{
         users: []User{
             User{
                 id: "bob",
-                permissions: []string{"hello"},
                 tokens: []string{"0123456789abcdef"},
             },
         },
     }
-}
 
-// GET /api/v1/hello
-func hello(c *girder.Context) (interface{}, *girder.Error) {
-    user, err := users.GetByID(c.User.ID())
-    if err != nil {
-        return nil, girder.NewErrorFor(err)
-    }
+    r := mux.NewRouter()
+    r.Path("/api/v1/hello").Handler(girder.NewHandler(hello).RequireAuthentication(store.GetUser).RequirePermission("hello"))
 
-    return fmt.Sprintf("Hello %s", user.Name), nil
+    http.ListenAndServe(":8080", r)
 }
 ```

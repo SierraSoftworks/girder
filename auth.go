@@ -1,14 +1,6 @@
 package girder
 
-// MustBeAuthenticated checks that the user has been authenticated and returns
-// an API compatible error if they are not.
-func (c *Context) MustBeAuthenticated() *Error {
-	if !c.IsAuthenticated() {
-		return NewError(401, "Unauthorized", "You have not provided a valid authorization token with your request.")
-	}
-
-	return nil
-}
+import "github.com/SierraSoftworks/girder/errors"
 
 // IsAuthenticated asserts that the request has been authenticated
 func (c *Context) IsAuthenticated() bool {
@@ -16,8 +8,22 @@ func (c *Context) IsAuthenticated() bool {
 }
 
 // RequireAuthentication configures this handler to require authentication
-func (h *Handler) RequireAuthentication() *Handler {
-	return h.RegisterPreprocessors(func(c *Context) *Error {
-		return c.MustBeAuthenticated()
+func (h *Handler) RequireAuthentication(getUser func(token *AuthorizationToken) (User, error)) *Handler {
+	return h.RegisterPreprocessors(func(c *Context) error {
+		token := c.GetAuthToken()
+		if token != nil {
+			user, err := getUser(token)
+			if err != nil {
+				return err
+			}
+
+			c.User = user
+		}
+
+		if !c.IsAuthenticated() {
+			return errors.Unauthorized()
+		}
+
+		return nil
 	})
 }

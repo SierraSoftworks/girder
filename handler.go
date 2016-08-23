@@ -3,12 +3,13 @@ package girder
 import (
 	"net/http"
 
+	"github.com/SierraSoftworks/girder/errors"
 	log "github.com/Sirupsen/logrus"
 	"github.com/gorilla/mux"
 )
 
 // HandlerFunc represents a function that handles an API request and returns a result
-type HandlerFunc func(c *Context) (interface{}, *Error)
+type HandlerFunc func(c *Context) (interface{}, error)
 
 // Handler represents an API request handler
 type Handler struct {
@@ -25,11 +26,6 @@ func NewHandler(handle HandlerFunc) *Handler {
 	}
 }
 
-func (h *Handler) RegisterPreprocessors(preprocessors ...Preprocessor) *Handler {
-	h.Preprocessors = append(h.Preprocessors, preprocessors...)
-	return h
-}
-
 func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	c := &Context{
 		Request:         r,
@@ -40,24 +36,11 @@ func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		response: w,
 	}
 
-	authToken := c.GetAuthToken()
-	if authToken != nil && ActiveUserStore != nil {
-		user, err := ActiveUserStore.GetUser(authToken)
-		if err != nil {
-			w.WriteHeader(err.Code)
-			if err := writeJSON(err, c); err != nil {
-				log.Error("Failed to encode error to JSON", err)
-				return
-			}
-		}
-
-		c.User = user
-	}
-
 	for _, preprocessor := range h.Preprocessors {
 		if err := preprocessor(c); err != nil {
-			w.WriteHeader(err.Code)
-			if err := writeJSON(err, c); err != nil {
+			e := errors.From(err)
+			w.WriteHeader(e.Code)
+			if err := writeJSON(e, c); err != nil {
 				log.Error("Failed to encode error to JSON", err)
 			}
 
@@ -68,8 +51,9 @@ func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	res, err := h.HandleFunc(c)
 
 	if err != nil {
-		w.WriteHeader(err.Code)
-		if err := writeJSON(err, c); err != nil {
+		e := errors.From(err)
+		w.WriteHeader(e.Code)
+		if err := writeJSON(e, c); err != nil {
 			log.Error("Failed to encode error to JSON", err)
 		}
 

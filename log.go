@@ -1,12 +1,10 @@
 package girder
 
-import (
-	log "github.com/Sirupsen/logrus"
-)
+import log "github.com/Sirupsen/logrus"
 
 // LogRequests adds debug logging on all requests to simplify diagnosing problems
 func (h *Handler) LogRequests() *Handler {
-	return h.RegisterPreprocessors(func(c *Context) *Error {
+	return h.RegisterPreprocessors(func(c *Context) error {
 		log.WithFields(log.Fields{
 			"headers": c.Request.Header,
 			"vars":    c.Vars,

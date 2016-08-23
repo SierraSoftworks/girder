@@ -1,18 +1,22 @@
 package girder
 
-import . "gopkg.in/check.v1"
+import (
+	"net/http"
+
+	"github.com/SierraSoftworks/girder/errors"
+	. "gopkg.in/check.v1"
+)
 
 type TestUser struct {
-	id          string
-	permissions []string
+	id string
 }
 
-func (u *TestUser) ID() string {
+func (u *TestUser) GetID() string {
 	return u.id
 }
 
-func (u *TestUser) Permissions() []string {
-	return u.permissions
+func (u *TestUser) HasPermission(permission string) bool {
+	return true
 }
 
 func (s *TestSuite) TestIsAuthenticated(c *C) {
@@ -21,25 +25,38 @@ func (s *TestSuite) TestIsAuthenticated(c *C) {
 
 	ctx = &Context{
 		User: &TestUser{
-			id:          "bob",
-			permissions: []string{"x", "y", "z"},
+			id: "bob",
 		},
 	}
 
 	c.Check(ctx.IsAuthenticated(), Equals, true)
 }
 
-func (s *TestSuite) TestMustBeAuthenticated(c *C) {
-	ctx := &Context{}
-	c.Check(ctx.MustBeAuthenticated(), NotNil)
-	c.Check(ctx.MustBeAuthenticated(), FitsTypeOf, &Error{})
-
-	ctx = &Context{
-		User: &TestUser{
-			id:          "bob",
-			permissions: []string{"x", "y", "z"},
+func (s *TestSuite) TestRequireAuthentication(c *C) {
+	ctx := &Context{
+		Request: &http.Request{
+			Header: http.Header{},
 		},
 	}
 
-	c.Check(ctx.MustBeAuthenticated(), IsNil)
+	h := NewHandler(nil)
+	h.RequireAuthentication(func(token *AuthorizationToken) (User, error) {
+		return &TestUser{
+			id: token.Value,
+		}, nil
+	})
+
+	c.Check(h.Preprocessors, HasLen, 1)
+
+	proc := h.Preprocessors[0]
+	err := proc(ctx)
+	c.Assert(err, NotNil)
+	e := errors.From(err)
+	c.Check(e.Code, Equals, 401)
+	c.Check(e.Name, Equals, "Unauthorized")
+
+	ctx.Request.Header.Set("Authorization", "Token test")
+	err = proc(ctx)
+	c.Assert(err, IsNil)
+	c.Check(ctx.User, DeepEquals, &TestUser{id: "test"})
 }
