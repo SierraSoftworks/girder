@@ -38,6 +38,8 @@ func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		response: w,
 	}
 
+	c.ResponseHeaders.Set("Content-Type", "application/json; charset=utf-8")
+
 	for _, preprocessor := range h.Preprocessors {
 		if err := preprocessor(c); err != nil {
 			e := errors.From(err)
