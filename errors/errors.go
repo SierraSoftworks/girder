@@ -1,16 +1,13 @@
 package errors
 
-import (
-	"fmt"
-	"runtime/debug"
-)
+import "fmt"
 
 // Error represents an API level error object built up of a code, name and message
 type Error struct {
-	Code    int    `json:"code"`
-	Name    string `json:"error"`
-	Message string `json:"message"`
-	Stack   string `json:"-"`
+	Code       int         `json:"code"`
+	Name       string      `json:"error"`
+	Message    string      `json:"message"`
+	Stacktrace interface{} `json:"-"`
 }
 
 func (e *Error) Error() string {
@@ -20,10 +17,10 @@ func (e *Error) Error() string {
 // NewError creates a new API level error object with the given properties
 func NewError(code int, name, message string) *Error {
 	return &Error{
-		Code:    code,
-		Name:    name,
-		Message: message,
-		Stack:   string(debug.Stack()),
+		Code:       code,
+		Name:       name,
+		Message:    message,
+		Stacktrace: Stacktrace.Get(),
 	}
 }
 
