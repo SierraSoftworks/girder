@@ -34,6 +34,7 @@ func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		Vars:            mux.Vars(r),
 		StatusCode:      200,
 		Permissions:     gatekeeper.NewMatcher().WithContext(mux.Vars(r)),
+		Formatter:       &JSONFormatter{},
 
 		response: w,
 	}
@@ -66,8 +67,15 @@ func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 	w.WriteHeader(c.StatusCode)
 	if res != nil {
-		if err := writeJSON(res, c); err != nil {
-			log.WithField("response", res).Error("Failed to encode response to JSON", err)
+		if c.Formatter == nil {
+			log.
+				WithField("response", res).
+				Error("No formatter available for this context", err)
+		} else if err := c.Formatter.Write(res, c.response); err != nil {
+			log.
+				WithField("response", res).
+				WithField("formatter", c.Formatter).
+				Error("Failed to encode response", err)
 		}
 	}
 }
