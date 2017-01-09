@@ -15,6 +15,7 @@ type Context struct {
 	StatusCode      int
 	User            User
 	Permissions     *gatekeeper.Matcher
+	Formatter       Formatter
 
 	response http.ResponseWriter
 }
