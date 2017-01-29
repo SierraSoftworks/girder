@@ -5,11 +5,6 @@ import (
 	"io"
 )
 
-func parseJSON(data interface{}, c *Context) error {
-	dec := json.NewDecoder(c.Request.Body)
-	return dec.Decode(data)
-}
-
 func writeJSON(data interface{}, c *Context) error {
 	enc := json.NewEncoder(c.response)
 	return enc.Encode(data)
@@ -21,4 +16,8 @@ type JSONFormatter struct{}
 
 func (f *JSONFormatter) Write(data interface{}, into io.Writer) error {
 	return json.NewEncoder(into).Encode(data)
+}
+
+func (f *JSONFormatter) Read(data interface{}, from io.Reader) error {
+	return json.NewDecoder(from).Decode(data)
 }

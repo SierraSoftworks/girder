@@ -15,6 +15,7 @@ type TestReadBodyData struct {
 
 func (s *TestSuite) TestReadBody(c *C) {
 	ctx := &Context{
+		Parser: &JSONFormatter{},
 		Request: &http.Request{
 			Body: ioutil.NopCloser(bytes.NewBufferString(`{"test":1}`)),
 		},
@@ -28,6 +29,7 @@ func (s *TestSuite) TestReadBody(c *C) {
 
 func (s *TestSuite) TestReadBodyMalformedData(c *C) {
 	ctx := &Context{
+		Parser: &JSONFormatter{},
 		Request: &http.Request{
 			Body: ioutil.NopCloser(bytes.NewBufferString(`{test:1}`)),
 		},
