@@ -35,6 +35,7 @@ func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		StatusCode:      200,
 		Permissions:     gatekeeper.NewMatcher().WithContext(mux.Vars(r)),
 		Formatter:       &JSONFormatter{},
+		Parser:          &JSONFormatter{},
 
 		response: w,
 	}
@@ -46,7 +47,9 @@ func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 			e := errors.From(err)
 			w.WriteHeader(e.Code)
 			if err := writeJSON(e, c); err != nil {
-				log.Error("Failed to encode error to JSON", err)
+				log.
+					WithError(err).
+					Error("Failed to encode error to JSON")
 			}
 
 			return
@@ -55,11 +58,20 @@ func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 	res, err := h.HandleFunc(c)
 
+	if upgrader, ok := res.(Upgrader); err == nil && ok {
+		err = upgrader.Upgrade(c, w)
+		if err == nil {
+			return
+		}
+	}
+
 	if err != nil {
 		e := errors.From(err)
 		w.WriteHeader(e.Code)
 		if err := writeJSON(e, c); err != nil {
-			log.Error("Failed to encode error to JSON", err)
+			log.
+				WithError(err).
+				Error("Failed to encode error to JSON")
 		}
 
 		return
@@ -70,12 +82,13 @@ func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		if c.Formatter == nil {
 			log.
 				WithField("response", res).
-				Error("No formatter available for this context", err)
+				Error("No formatter available for this context")
 		} else if err := c.Formatter.Write(res, c.response); err != nil {
 			log.
+				WithError(err).
 				WithField("response", res).
 				WithField("formatter", c.Formatter).
-				Error("Failed to encode response", err)
+				Error("Failed to encode response")
 		}
 	}
 }
