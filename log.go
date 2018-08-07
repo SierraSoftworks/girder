@@ -1,6 +1,6 @@
 package girder
 
-import log "github.com/Sirupsen/logrus"
+import log "github.com/sirupsen/logrus"
 
 // LogRequests adds debug logging on all requests to simplify diagnosing problems
 func (h *Handler) LogRequests() *Handler {

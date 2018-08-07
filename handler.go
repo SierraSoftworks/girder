@@ -5,8 +5,8 @@ import (
 
 	"github.com/SierraSoftworks/gatekeeper"
 	"github.com/SierraSoftworks/girder/errors"
-	log "github.com/Sirupsen/logrus"
 	"github.com/gorilla/mux"
+	log "github.com/sirupsen/logrus"
 )
 
 // HandlerFunc represents a function that handles an API request and returns a result
