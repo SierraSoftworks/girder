@@ -1,6 +1,6 @@
 github.com/SierraSoftworks/gatekeeper v0.0.0-20160823075555-a0afb5186db5 h1:H+Ubf5uvM5Pjq1YRqPivT/P64/o89HHaZkPKILgFMcg=
 github.com/SierraSoftworks/gatekeeper v0.0.0-20160823075555-a0afb5186db5/go.mod h1:z1Mxlp8qJlGlZl3S+wGdVUfaXgiiBmU1QL8PZVcag6E=
-github.com/Sirupsen/logrus v0.0.0-20160813154005-08a8a7c27e3d/go.mod h1:rmk17hk6i8ZSAJkSDa7nOxamrG+SP4P0mm+DAvExv4U=
+github.com/sirupsen/logrus v0.0.0-20160813154005-08a8a7c27e3d/go.mod h1:rmk17hk6i8ZSAJkSDa7nOxamrG+SP4P0mm+DAvExv4U=
 github.com/davecgh/go-spew v1.1.1/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
 github.com/gorilla/context v1.1.1/go.mod h1:kBGZzfjB9CEq2AlWe17Uuf7NDRt0dE0s8S51q0aT7Yg=
 github.com/gorilla/mux v0.0.0-20160816184630-cf79e51a62d8 h1:I8uk/hpK+5UVhrha/fbkkMLN2PwwklRyEOYg0hQugHo=

@@ -2,7 +2,7 @@ module github.com/SierraSoftworks/girder
 
 require (
 	github.com/SierraSoftworks/gatekeeper v0.0.0-20160823075555-a0afb5186db5
-	github.com/Sirupsen/logrus v0.0.0-20160813154005-08a8a7c27e3d
+	github.com/sirupsen/logrus v0.0.0-20160813154005-08a8a7c27e3d
 	github.com/gorilla/context v1.1.1
 	github.com/gorilla/mux v0.0.0-20160816184630-cf79e51a62d8
 	github.com/gorilla/websocket v0.0.0-20170126191427-c36f2fe5c330
