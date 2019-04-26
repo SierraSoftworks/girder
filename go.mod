@@ -1,14 +1,13 @@
 module github.com/SierraSoftworks/girder
 
 require (
-	github.com/SierraSoftworks/gatekeeper v0.0.0-20160823075555-a0afb5186db5
-	github.com/Sirupsen/logrus v0.0.0-20160813154005-08a8a7c27e3d
-	github.com/gorilla/context v1.1.1
-	github.com/gorilla/mux v0.0.0-20160816184630-cf79e51a62d8
-	github.com/gorilla/websocket v0.0.0-20170126191427-c36f2fe5c330
-	github.com/sirupsen/logrus v1.2.0
-	golang.org/x/sys v0.0.0-20180905080454-ebe1bf3edb33
-	gopkg.in/airbrake/gobrake.v2 v2.0.7
-	gopkg.in/check.v1 v1.0.0-20160105164936-4f90aeace3a2
-	gopkg.in/gemnasium/logrus-airbrake-hook.v2 v2.0.0
+	github.com/SierraSoftworks/gatekeeper v0.0.0-20160823094219-c9a25dab7ddd
+	github.com/gorilla/mux v1.7.0
+	github.com/gorilla/websocket v1.4.0
+	github.com/kr/pretty v0.1.0 // indirect
+	github.com/sirupsen/logrus v1.3.0
+	github.com/stretchr/testify v1.3.0 // indirect
+	golang.org/x/crypto v0.0.0-20190219172222-a4c6cb3142f2 // indirect
+	golang.org/x/sys v0.0.0-20190219203350-90b0e4468f99 // indirect
+	gopkg.in/check.v1 v1.0.0-20180628173108-788fd7840127
 )
